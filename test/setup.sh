@@ -5,6 +5,7 @@ set -e
 CLUSTER_NAME="project-api-cluster"
 NAMESPACE="project-api-system"
 IMAGE_NAME="josephaw1022/project-api"
+KUBECTL_CONTEXT="kind-${CLUSTER_NAME}"
 
 BUILD_IMAGE=false
 PUSH_IMAGE=false
@@ -28,7 +29,7 @@ else
 fi
 
 # Point to the kind cluster
-kubectl config use-context kind-${CLUSTER_NAME}
+kubectl config use-context ${KUBECTL_CONTEXT}
 
 if [ "$BUILD_IMAGE" = true ]; then
   # Generate a unique tag based on the current timestamp to force image refresh
@@ -79,7 +80,7 @@ EOF
 openssl req -newkey rsa:2048 -nodes -keyout ${CERT_DIR}/tls.key -x509 -days 365 -out ${CERT_DIR}/tls.crt -config ${CERT_DIR}/openssl.cnf
 
 echo "Creating namespace and certificates secret..."
-kubectl apply -f - <<EOF
+kubectl --context "${KUBECTL_CONTEXT}" apply -f - <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -101,12 +102,11 @@ echo "Applying manifests..."
 CA_BUNDLE=$(cat ${CERT_DIR}/tls.crt | base64 -w0)
 sed -i "s/caBundle: .*/caBundle: ${CA_BUNDLE}/" manifests/apiservice.yaml
 
-kubectl apply -f manifests/apiservice.yaml
-kubectl apply -f manifests/deployment.yaml
-kubectl apply -f manifests/project-crd.yaml
+kubectl --context "${KUBECTL_CONTEXT}" apply -f manifests/apiservice.yaml
+kubectl --context "${KUBECTL_CONTEXT}" apply -f manifests/deployment.yaml
 
 echo "Waiting for deployment..."
-kubectl rollout status deployment/project-api -n ${NAMESPACE} --timeout=120s
+kubectl --context "${KUBECTL_CONTEXT}" rollout status deployment/project-api -n ${NAMESPACE} --timeout=120s
 
 echo "Setting up test user: developer..."
 USER_NAME="developer"
@@ -118,8 +118,8 @@ openssl genrsa -out ${USER_DIR}/${USER_NAME}.key 2048
 openssl req -new -key ${USER_DIR}/${USER_NAME}.key -out ${USER_DIR}/${USER_NAME}.csr -subj "/CN=${USER_NAME}"
 
 # Submit CSR (non-interactively)
-kubectl delete csr ${USER_NAME} --ignore-not-found --interactive=false
-cat <<EOF | kubectl apply -f -
+kubectl --context "${KUBECTL_CONTEXT}" delete csr ${USER_NAME} --ignore-not-found --interactive=false
+cat <<EOF | kubectl --context "${KUBECTL_CONTEXT}" apply -f -
 apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
@@ -132,18 +132,18 @@ spec:
 EOF
 
 # Approve CSR
-kubectl certificate approve ${USER_NAME}
+kubectl --context "${KUBECTL_CONTEXT}" certificate approve ${USER_NAME}
 
 # Get the certificate
-kubectl get csr ${USER_NAME} -o jsonpath='{.status.certificate}' | base64 -d > ${USER_DIR}/${USER_NAME}.crt
+kubectl --context "${KUBECTL_CONTEXT}" get csr ${USER_NAME} -o jsonpath='{.status.certificate}' | base64 -d > ${USER_DIR}/${USER_NAME}.crt
 
 # Set kubectl credentials and context
 kubectl config set-credentials ${USER_NAME} --client-certificate=${USER_DIR}/${USER_NAME}.crt --client-key=${USER_DIR}/${USER_NAME}.key --embed-certs=true
-kubectl config set-context ${USER_NAME} --cluster=kind-${CLUSTER_NAME} --user=${USER_NAME}
+kubectl config set-context ${USER_NAME} --cluster=${KUBECTL_CONTEXT} --user=${USER_NAME}
 
 # Grant self-provisioner and project-viewer permissions to the developer
-kubectl create clusterrolebinding ${USER_NAME}-self-provisioner --clusterrole=self-provisioner --user=${USER_NAME} --dry-run=client -o yaml | kubectl apply -f -
-kubectl create clusterrolebinding ${USER_NAME}-project-viewer --clusterrole=project-viewer --user=${USER_NAME} --dry-run=client -o yaml | kubectl apply -f -
+kubectl --context "${KUBECTL_CONTEXT}" create clusterrolebinding ${USER_NAME}-self-provisioner --clusterrole=self-provisioner --user=${USER_NAME}
+kubectl --context "${KUBECTL_CONTEXT}" create clusterrolebinding ${USER_NAME}-project-viewer --clusterrole=project-viewer --user=${USER_NAME}
 
 echo "Setup complete! Test user '${USER_NAME}' is ready."
 echo "Use 'kubectl config use-context ${USER_NAME}' to test as the user."

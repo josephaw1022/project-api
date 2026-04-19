@@ -6,8 +6,8 @@ CLUSTER_NAME="project-api-cluster"
 KUBECTL_CONTEXT="kind-${CLUSTER_NAME}"
 
 if [[ "$1" == "--all" ]]; then
-  echo "Deleting Kind cluster '${CLUSTER_NAME}' and local certs..."
-  kind delete cluster --name "${CLUSTER_NAME}"
+  echo "Deleting all Kind clusters and local certs..."
+  kind delete clusters --all
   rm -rf "${DIR}/certs"
   echo "Full teardown complete."
   exit 0
