@@ -47,17 +47,27 @@ All management and validation logic is located in the `test/` directory.
 
 ### Installation
 
-To provision a fresh Kind cluster, build the API server, and deploy all necessary manifests (APIService, CRDs, RBAC):
+There are two ways to deploy the Project API:
+
+#### Option 1: Helm Chart (Recommended)
+This uses the Helm chart for a standardized deployment.
 
 ```bash
-./test/setup.sh
+# Setup cluster and install via Helm
+./test/setup-helm.sh
+
+# Validate self-service via Helm context
+./test/test-self-service-helm.sh
 ```
 
-### Validation
-
-To run the automated self-service validation suite, which verifies project creation, ownership isolation, and RBAC injection:
+#### Option 2: Raw Manifests
+This is useful for local development and debugging.
 
 ```bash
+# Provision Kind cluster, build API server, and deploy manifests
+./test/setup.sh
+
+# Validate self-service
 ./test/test-self-service.sh
 ```
 
@@ -69,7 +79,7 @@ To remove the Project API resources from the cluster while keeping the Kind clus
 ./test/teardown.sh
 ```
 
-To completely obliterate the Kind cluster and clear all local certificates:
+To completely obliterate all Kind clusters and clear all local certificates:
 
 ```bash
 ./test/teardown.sh --all
@@ -78,5 +88,6 @@ To completely obliterate the Kind cluster and clear all local certificates:
 ## Project Structure
 
 - `projects/`: Go source code for the aggregated API server.
-- `test/`: Deployment manifests, setup/teardown scripts, and validation tests.
-- `test/manifests/`: Kubernetes resource definitions for the API server and RBAC policies.
+- `charts/`: Helm chart for deploying the Project API.
+- `test/`: Deployment scripts, setup/teardown logic, and validation tests.
+- `test/manifests/`: Raw Kubernetes resource definitions.
