@@ -6,7 +6,7 @@ Project API provides a secure, self-service multi-tenancy layer for Kubernetes. 
 
 Projects are the primary way to enable a user to create a namespace, be an admin of the namespaces they've created, and modify or delete them without having access to or visibility of other namespaces in the cluster.
 
-In a standard Kubernetes cluster, granting a user the ability to create, edit, and delete namespaces is dangerous, especially in a multi-tenant environment. There are two typical approaches for managing namespaces in a multi-tenant vanilla Kubernetes cluster:
+In a standard Kubernetes cluster, there are two typical approaches for managing namespaces:
 
 1. Enable team admins the ability to do what they want to namespaces.
 2. Manage which users and groups have the ability to manage which namespaces and have the cluster admin create every namespace and update the RBAC role binding on every namespace created for a team.
