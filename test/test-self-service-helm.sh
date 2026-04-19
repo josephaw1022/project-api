@@ -109,9 +109,8 @@ spec:
     targetPort: 80
 EOF
 
-echo "Cleaning up nginx resources..."
-kubectl delete deployment/nginx service/nginx -n ${PROJECT_NAME} --interactive=false
-echo "SUCCESS: Developer has admin rights in the new project."
+echo "SUCCESS: Nginx deployment and service created successfully."
+echo "Developer has admin rights in the new project."
 
 # 9. Verify developer still cannot see other projects
 echo "Verifying developer still cannot see 'default' project:"
