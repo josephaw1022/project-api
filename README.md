@@ -13,6 +13,18 @@ Project API solves this by providing:
 - **Automatic RBAC**: When a user creates a Project, the API server automatically injects a `project-admin` RoleBinding, granting them full management rights within that specific project.
 - **Enhanced Security**: It prevents users from "scoping out" the cluster by hiding namespaces they don't have permission to access.
 
+## Inspiration & Heritage
+
+This project is a clean-room "rip" of the **Project** concept from the **OpenShift** ecosystem. While OpenShift provides powerful multi-tenancy out of the box, it is often tightly coupled with the rest of the platform. 
+
+The goal of this repository is to decouple this logic and enable the **exact same project experience** on any **vanilla Kubernetes cluster**.
+
+This implementation was built by analyzing and porting logic from several key OpenShift repositories:
+- [**openshift/api**](https://github.com/openshift/api): For the core `Project` and `ProjectRequest` schemas.
+- [**openshift/origin**](https://github.com/openshift/origin): For the behavioral logic and E2E test patterns.
+- [**openshift/cluster-openshift-apiserver-operator**](https://github.com/openshift/cluster-openshift-apiserver-operator): For understanding how the API server is configured and observed.
+- [**openshift/apiserver-library-go**](https://github.com/openshift/apiserver-library-go): For authorization scoping and filtering patterns.
+
 ## How it Works
 
 The "only your projects" isolation is made possible by the **Kubernetes API Aggregation** layer. 
