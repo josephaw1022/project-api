@@ -6,9 +6,16 @@ Project API provides a secure, self-service multi-tenancy layer for Kubernetes. 
 
 Projects are the primary way to enable a user to create a namespace, be an admin of the namespaces they've created, and modify or delete them without having access to or visibility of other namespaces in the cluster.
 
-In a standard Kubernetes cluster, granting a user the ability to create, edit, and delete namespaces is dangerous, especially in a multi-tenant environment. Without a proxy layer like Project API, providing these permissions usually requires granting cluster-wide namespace access, which allows users to "scope out" the cluster, view sensitive metadata about other tenants, or accidentally interfere with system namespaces.
+In a standard Kubernetes cluster, granting a user the ability to create, edit, and delete namespaces is dangerous, especially in a multi-tenant environment. There are two typical approaches for managing namespaces in a multi-tenant vanilla Kubernetes cluster:
 
-Furthermore, manually granting permissions to specific people and groups for every new namespace is tedious and completely destroys the ideal of self-service. This "manual" approach keeps a cluster administrator permanently in the loop for every lifecycle event. **Project API allows cluster admins to work independently of cluster users** by automating the security and RBAC boundaries, enabling true, safe self-service.
+1. Enable team admins the ability to do what they want to namespaces.
+2. Manage which users and groups have the ability to manage which namespaces and have the cluster admin create every namespace and update the RBAC role binding on every namespace created for a team.
+
+The first approach is inherently insecure. Providing these permissions usually requires granting cluster-wide namespace access, which allows users to "scope out" the cluster, view sensitive metadata about other tenants, or accidentally interfere with system namespaces. It fails to provide the isolation necessary for a multi-tenant environment, as any "team admin" effectively becomes a cluster-wide namespace administrator.
+
+The second approach is a significant operational bottleneck. Manually granting permissions to specific people and groups for every new namespace is tedious and completely destroys the ideal of self-service. This "manual" approach keeps a cluster administrator permanently in the loop for every lifecycle event, leading to delays and human error.
+
+**Project API allows cluster admins to work independently of cluster users** by automating the security and RBAC boundaries, enabling true, safe self-service.
 
 Project API solves these problems by providing:
 
