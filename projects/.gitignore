@@ -1,0 +1,7 @@
+# Binaries
+project-api
+
+# Local OS/IDE files
+.DS_Store
+*.swp
+*.bak

@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: project-api-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: project-api
+  namespace: project-api-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: project-api
+  namespace: project-api-system
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    app: project-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: project-api
+  namespace: project-api-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: project-api
+  template:
+    metadata:
+      labels:
+        app: project-api
+    spec:
+      serviceAccountName: project-api
+      containers:
+      - name: project-api
+        image: josephaw1022/project-api:1776624530
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 443
+        volumeMounts:
+        - name: certs
+          mountPath: /etc/project-api/certs
+          readOnly: true
+        command:
+        - ./project-api
+        - --tls-cert-file=/etc/project-api/certs/tls.crt
+        - --tls-private-key-file=/etc/project-api/certs/tls.key
+      volumes:
+      - name: certs
+        secret:
+          secretName: project-api-certs
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: project-api-auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: project-api
+  namespace: project-api-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: project-api-manager
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["project.io"]
+  resources: ["projects", "projectrequests"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["rolebindings"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles"]
+  resourceNames: ["admin"]
+  verbs: ["bind"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["validatingadmissionpolicies", "validatingadmissionpolicybindings", "validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: project-api-manager-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: project-api-manager
+subjects:
+- kind: ServiceAccount
+  name: project-api
+  namespace: project-api-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: project-api-auth-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: project-api
+  namespace: project-api-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: self-provisioner
+rules:
+- apiGroups: ["project.io"]
+  resources: ["projectrequests"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: project-viewer
+rules:
+- apiGroups: ["project.io"]
+  resources: ["projects"]
+  verbs: ["get", "list", "watch"]

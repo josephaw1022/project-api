@@ -1,0 +1,8 @@
+# Generated certificates and keys
+certs/
+users/
+
+# Local OS/IDE files
+.DS_Store
+*.swp
+*.bak
