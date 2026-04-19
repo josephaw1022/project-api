@@ -21,7 +21,7 @@ Project API solves these problems by providing:
 
 - **User Isolation**: Users can only see and interact with namespaces (via projects) they own or have been granted explicit access to.
 - **Self-Service**: Users can create their own namespaces via Projects.
-- **Automatic RBAC**: When a user creates a Project, the API server automatically injects a `project-admin` RoleBinding, granting them full management rights within that specific project.
+- **Automatic RBAC**: When a user creates a Project, the API server automatically creates an `admin` RoleBinding in the namespace for that user, granting them full management rights within that specific namespace (or project).
 - **Enhanced Security**: It prevents users from "scoping out" the cluster by hiding namespaces they don't have permission to access.
 
 ## Getting Started
