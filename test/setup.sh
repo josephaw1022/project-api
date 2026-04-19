@@ -5,9 +5,18 @@ set -e
 CLUSTER_NAME="project-api-cluster"
 NAMESPACE="project-api-system"
 IMAGE_NAME="josephaw1022/project-api"
-# Generate a unique tag based on the current timestamp to force image refresh
-IMAGE_TAG=$(date +%s)
-FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
+
+BUILD_IMAGE=false
+PUSH_IMAGE=false
+
+for arg in "$@"; do
+  if [ "$arg" == "--build" ]; then
+    BUILD_IMAGE=true
+  fi
+  if [ "$arg" == "--push" ]; then
+    PUSH_IMAGE=true
+  fi
+done
 
 echo "Creating Kind cluster..."
 # Use podman if available, otherwise docker
@@ -21,20 +30,32 @@ fi
 # Point to the kind cluster
 kubectl config use-context kind-${CLUSTER_NAME}
 
-echo "Building project-api image..."
-echo "Using image: ${FULL_IMAGE}"
-# Build the image locally
-podman build -t ${FULL_IMAGE} ../projects
+if [ "$BUILD_IMAGE" = true ]; then
+  # Generate a unique tag based on the current timestamp to force image refresh
+  IMAGE_TAG=$(date +%s)
+  FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 
-echo "Pushing image to Docker Hub..."
-podman push ${FULL_IMAGE}
+  echo "Building project-api image..."
+  echo "Using image: ${FULL_IMAGE}"
+  # Build the image locally
+  podman build -t ${FULL_IMAGE} ../projects
 
-# For kind, we can also load the image locally to speed things up
-echo "Loading image into Kind..."
-kind load docker-image ${FULL_IMAGE} --name ${CLUSTER_NAME}
+  # For kind, we can also load the image locally to speed things up
+  echo "Loading image into Kind..."
+  kind load docker-image ${FULL_IMAGE} --name ${CLUSTER_NAME}
 
-# Update deployment manifest with the new image tag, surgically replacing only the image part
-sed -i "s|${IMAGE_NAME}:.*|${FULL_IMAGE}|" manifests/deployment.yaml
+  # Update deployment manifest with the new image tag, surgically replacing only the image part
+  sed -i "s|${IMAGE_NAME}:.*|${FULL_IMAGE}|" manifests/deployment.yaml
+else
+  # Resolve FULL_IMAGE from the current manifest
+  FULL_IMAGE=$(grep "image: ${IMAGE_NAME}" manifests/deployment.yaml | awk '{print $2}' | tr -d '"')
+  echo "Using existing image from manifest: ${FULL_IMAGE}"
+fi
+
+if [ "$PUSH_IMAGE" = true ]; then
+  echo "Pushing image ${FULL_IMAGE} to Docker Hub..."
+  podman push ${FULL_IMAGE}
+fi
 
 echo "Generating certificates with SANs..."
 CERT_DIR="./certs"

@@ -61,6 +61,20 @@ To run the automated self-service validation suite, which verifies project creat
 ./test/test-self-service.sh
 ```
 
+### Teardown
+
+To remove the Project API resources from the cluster while keeping the Kind cluster and certificates intact:
+
+```bash
+./test/teardown.sh
+```
+
+To completely obliterate the Kind cluster and clear all local certificates:
+
+```bash
+./test/teardown.sh --all
+```
+
 ## Project Structure
 
 - `projects/`: Go source code for the aggregated API server.
