@@ -4,6 +4,8 @@ Project API provides a secure, self-service multi-tenancy layer for Kubernetes. 
 
 ## Why Projects?
 
+Projects are the primary way to enable a user to create a namespace, be an admin of the namespaces they've created, and modify or delete them without having access to or visibility of other namespaces in the cluster.
+
 In a standard Kubernetes cluster, any user with `list namespaces` permissions can see every namespace in the cluster, which often leaks sensitive information about the cluster's organization and occupants.
 
 Project API solves this by providing:
