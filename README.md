@@ -19,7 +19,7 @@ The second approach is a significant operational bottleneck. Manually granting p
 
 Project API solves these problems by providing:
 
-- **User Isolation**: Users can only see and interact with Projects they own or have been granted explicit access to.
+- **User Isolation**: Users can only see and interact with namespaces (via projects) they own or have been granted explicit access to.
 - **Self-Service**: Users can create their own namespaces via Projects.
 - **Automatic RBAC**: When a user creates a Project, the API server automatically injects a `project-admin` RoleBinding, granting them full management rights within that specific project.
 - **Enhanced Security**: It prevents users from "scoping out" the cluster by hiding namespaces they don't have permission to access.
