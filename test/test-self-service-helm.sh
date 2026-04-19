@@ -71,10 +71,46 @@ else
   exit 1
 fi
 
-# 8. Verify developer has admin rights in the new namespace (try creating a pod)
-echo "Verifying admin rights in '${PROJECT_NAME}' (creating a dummy pod)..."
-kubectl run dummy-pod --image=nginx -n ${PROJECT_NAME}
-kubectl delete pod dummy-pod -n ${PROJECT_NAME} --interactive=false
+# 8. Verify developer has admin rights in the new namespace (try creating a deployment and service)
+echo "Verifying admin rights in '${PROJECT_NAME}' (creating nginx deployment and service)..."
+kubectl create -n ${PROJECT_NAME} -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+EOF
+
+echo "Cleaning up nginx resources..."
+kubectl delete deployment/nginx service/nginx -n ${PROJECT_NAME} --interactive=false
 echo "SUCCESS: Developer has admin rights in the new project."
 
 # 9. Verify developer still cannot see other projects
