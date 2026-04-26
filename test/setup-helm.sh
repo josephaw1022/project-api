@@ -21,7 +21,7 @@ fi
 
 
 # Create namespace if it doesn't exist
-kubectl --context "${KUBECTL_CONTEXT}" create namespace ${NAMESPACE}
+kubectl --context "${KUBECTL_CONTEXT}" get namespace ${NAMESPACE} >/dev/null 2>&1 || kubectl --context "${KUBECTL_CONTEXT}" create namespace ${NAMESPACE}
 
 echo "Installing Project API via Helm..."
 # We use the default values which generate certificates automatically
@@ -66,8 +66,8 @@ kubectl config set-context ${USER_NAME} --cluster=${KUBECTL_CONTEXT} --user=${US
 # Grant self-provisioner and project-viewer permissions to the developer
 # Using the namespaced ClusterRole names from the Helm chart
 # The Helm chart prefixes ClusterRoles with the fullname (which is release name if not overridden)
-kubectl --context "${KUBECTL_CONTEXT}" create clusterrolebinding ${USER_NAME}-self-provisioner --clusterrole=${RELEASE_NAME}-self-provisioner --user=${USER_NAME}
-kubectl --context "${KUBECTL_CONTEXT}" create clusterrolebinding ${USER_NAME}-project-viewer --clusterrole=${RELEASE_NAME}-viewer --user=${USER_NAME}
+kubectl --context "${KUBECTL_CONTEXT}" create clusterrolebinding ${USER_NAME}-self-provisioner --clusterrole=${RELEASE_NAME}-self-provisioner --user=${USER_NAME} --dry-run=client -o yaml | kubectl --context "${KUBECTL_CONTEXT}" apply -f -
+kubectl --context "${KUBECTL_CONTEXT}" create clusterrolebinding ${USER_NAME}-project-viewer --clusterrole=${RELEASE_NAME}-viewer --user=${USER_NAME} --dry-run=client -o yaml | kubectl --context "${KUBECTL_CONTEXT}" apply -f -
 
 echo "Setup complete! Test user '${USER_NAME}' is ready."
 echo "Use 'kubectl config use-context ${USER_NAME}' to test as the user."
