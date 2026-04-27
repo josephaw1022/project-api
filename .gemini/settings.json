@@ -1,0 +1,8 @@
+{
+  "tools": {
+    "sandbox": false
+  },
+  "security": {
+    "toolSandboxing": false
+  }
+}
