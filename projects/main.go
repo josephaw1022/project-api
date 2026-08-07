@@ -51,13 +51,52 @@ func main() {
 	getDefinitions := func(ref openapicommon.ReferenceCallback) map[string]openapicommon.OpenAPIDefinition {
 		defs := map[string]openapicommon.OpenAPIDefinition{
 			"project-api/pkg/apis/project/v1.Project": {
-				Schema: spec.Schema{SchemaProps: spec.SchemaProps{Type: []string{"object"}}},
+				Schema: spec.Schema{
+					SchemaProps: spec.SchemaProps{Type: []string{"object"}},
+					VendorExtensible: spec.VendorExtensible{
+						Extensions: spec.Extensions{
+							"x-kubernetes-group-version-kind": []interface{}{
+								map[string]interface{}{
+									"group":   "project.io",
+									"version": "v1",
+									"kind":    "Project",
+								},
+							},
+						},
+					},
+				},
 			},
 			"project-api/pkg/apis/project/v1.ProjectList": {
-				Schema: spec.Schema{SchemaProps: spec.SchemaProps{Type: []string{"object"}}},
+				Schema: spec.Schema{
+					SchemaProps: spec.SchemaProps{Type: []string{"object"}},
+					VendorExtensible: spec.VendorExtensible{
+						Extensions: spec.Extensions{
+							"x-kubernetes-group-version-kind": []interface{}{
+								map[string]interface{}{
+									"group":   "project.io",
+									"version": "v1",
+									"kind":    "ProjectList",
+								},
+							},
+						},
+					},
+				},
 			},
 			"project-api/pkg/apis/project/v1.ProjectRequest": {
-				Schema: spec.Schema{SchemaProps: spec.SchemaProps{Type: []string{"object"}}},
+				Schema: spec.Schema{
+					SchemaProps: spec.SchemaProps{Type: []string{"object"}},
+					VendorExtensible: spec.VendorExtensible{
+						Extensions: spec.Extensions{
+							"x-kubernetes-group-version-kind": []interface{}{
+								map[string]interface{}{
+									"group":   "project.io",
+									"version": "v1",
+									"kind":    "ProjectRequest",
+								},
+							},
+						},
+					},
+				},
 			},
 			"io.k8s.apimachinery.pkg.version.Info": {
 				Schema: spec.Schema{SchemaProps: spec.SchemaProps{Type: []string{"object"}}},
